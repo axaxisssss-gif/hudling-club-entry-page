@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "skills": {
+    "agent-browser": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "skillPath": "skills/agent-browser/SKILL.md",
+      "computedHash": "a674b7d81066e3cc471a7512ddb4ae724418cbfefa75cbb050b0dc430e4d57a0"
+    },
+    "design-taste-frontend": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/taste-skill/SKILL.md",
+      "computedHash": "899b84384f74f540ea5284d9b2e9234e050998b42eacc805410b518d4226c0b3"
+    },
+    "higgsfield-brandkit": {
+      "source": "higgsfield-ai/skills",
+      "sourceType": "github",
+      "skillPath": "higgsfield-brandkit/SKILL.md",
+      "computedHash": "ffd4e3cee9cec37783b60181090dee3385a833f98cef734919124b2d6f418402"
+    },
+    "higgsfield-game-generation": {
+      "source": "higgsfield-ai/skills",
+      "sourceType": "github",
+      "skillPath": "higgsfield-game-generation/SKILL.md",
+      "computedHash": "26d470c4a4a0fc3bd829eded4824a774ded04b5281d302f8588e3337c781d652"
+    },
+    "higgsfield-generate": {
+      "source": "higgsfield-ai/skills",
+      "sourceType": "github",
+      "skillPath": "higgsfield-generate/SKILL.md",
+      "computedHash": "1c2b9afda716cba2e3338e780d5e7a06e88b4681e0335242274e93c25b76ea78"
+    },
+    "higgsfield-marketplace-cards": {
+      "source": "higgsfield-ai/skills",
+      "sourceType": "github",
+      "skillPath": "higgsfield-marketplace-cards/SKILL.md",
+      "computedHash": "dffdd858efc72915e4d9f600626912180e6b9b40a4c745a28d3099ea88c0dfeb"
+    },
+    "higgsfield-product-photoshoot": {
+      "source": "higgsfield-ai/skills",
+      "sourceType": "github",
+      "skillPath": "higgsfield-product-photoshoot/SKILL.md",
+      "computedHash": "5dd5a272025e954acbb9beb477a6a1c9200ce4e8155ab8ba8cfe13f444d0da64"
+    },
+    "higgsfield-soul-id": {
+      "source": "higgsfield-ai/skills",
+      "sourceType": "github",
+      "skillPath": "higgsfield-soul-id/SKILL.md",
+      "computedHash": "ca60c249db297868051996295d23c24b2477bea78a7dac06401639183ee38fb5"
+    },
+    "higgsfield-video-explainer": {
+      "source": "higgsfield-ai/skills",
+      "sourceType": "github",
+      "skillPath": "higgsfield-video-explainer/SKILL.md",
+      "computedHash": "8e240a9803b998ddb82ba5cea0a9706ecac7cbac75fc5ac98f57fa05fe229e2b"
+    },
+    "higgsfield-websites": {
+      "source": "higgsfield-ai/skills",
+      "sourceType": "github",
+      "skillPath": "higgsfield-websites/SKILL.md",
+      "computedHash": "98c635c016c70f0eae506fdd4011059184ec97be1eb18f505a0680d89750c7b4"
+    },
+    "higgsfield-youtube-thumbnail": {
+      "source": "higgsfield-ai/skills",
+      "sourceType": "github",
+      "skillPath": "higgsfield-youtube-thumbnail/SKILL.md",
+      "computedHash": "f549199d92da66913a1f7987ba812a51b40515b001def50c22252531215d43a9"
+    },
+    "image-to-code": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/image-to-code-skill/SKILL.md",
+      "computedHash": "3d2ac14d956fdafc5500d2108b90895e134d847f9f199e7f1d18bf1f814cf7c8"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "f3bc47f890f42a44db1007ab390709ec368e4b8c089baee6b0007182236ac474"
+    }
+  }
+}
