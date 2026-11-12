@@ -358,7 +358,7 @@ img { -webkit-user-drag: none; user-select: none; }
   background-position: center;
 }
 .portal--wellness .portal-window.portal-window--photo {
-  background-image: url('../assets/wellness-photo.png');
+  background-image: url('../assets/wellness-photo.png?v=2');
   background-size: cover;
   background-position: center;
 }
