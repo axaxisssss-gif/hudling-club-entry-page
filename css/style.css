@@ -234,10 +234,10 @@ img { -webkit-user-drag: none; user-select: none; }
 
 .venn-core {
   position: absolute;
-  left: 222.3px;
-  top: 233.1px;
-  width: 37.8px;
-  height: 37.8px;
+  left: 220.2px;
+  top: 231px;
+  width: 42px;
+  height: 42px;
   pointer-events: none;
   opacity: 1;
   /* Soft halo so the dot reads as a point of light, not a printed mark.
