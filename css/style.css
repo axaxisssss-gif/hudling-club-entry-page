@@ -634,14 +634,14 @@ img { -webkit-user-drag: none; user-select: none; }
 .brandline-sub--serif {
   font-family: 'DM Serif Display', serif;
   font-weight: 400;
-  font-size: 1.6em;
+  font-size: 1.4em;
 }
 .brandline-sub--serif em {
   font-style: italic;
 }
 
 .brandline-sub {
-  margin: 28px 0 0;
+  margin: 16px 0 0;
   font-family: 'DM Sans', sans-serif;
   font-size: 16px;
   font-weight: 300;
@@ -653,7 +653,7 @@ img { -webkit-user-drag: none; user-select: none; }
 }
 
 .brandline-copy {
-  margin: 10px 0 0;
+  margin: 22px 0 0;
   font-size: 13px;
   color: #f5f3ef;
   opacity: 0.38;
