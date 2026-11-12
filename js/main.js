@@ -17,6 +17,14 @@
   var heroVideo = document.getElementById('heroVideo');
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /* Desktop only: below this, the circles read as uncomfortably small
+     before the mobile layout breakpoint (760px) ever kicks in. Floored
+     here instead — the stage just crops at the left/right edges past
+     this point rather than keep shrinking (the venn/logo sit centered,
+     well clear of the edges, so cropping never touches them in this
+     narrow band before mobile takes over). */
+  var MIN_DESKTOP_SCALE = 0.75;
+
   /* Keep the original art direction centered while fitting every viewport. */
   function fitStage() {
     var isMobile = mobileQuery.matches;
@@ -25,6 +33,9 @@
     var vw = stageOuter.clientWidth;
     var vh = stageOuter.clientHeight;
     var scale = Math.min(vw / w, vh / h);
+    if (!isMobile) {
+      scale = Math.max(scale, MIN_DESKTOP_SCALE);
+    }
     stage.style.transform = 'scale(' + scale + ')';
   }
 
@@ -175,44 +186,34 @@
         clearProps: 'opacity'
       }, at);
     });
-    /* Once all three circles are done, the center dot dissolves in, all
-       three "Explore Now"s dissolve in together, AND the brand-line rules
-       ease open — slow and luxurious, not a snap — physically pushing
-       "Beauty" and "Balance" apart from their clustered rest position
-       next to "Is". Everything reads as one calm exhale that closes out
-       the whole sequence. */
+    /* Once all three circles are done, the center dot dissolves in and all
+       three "Explore Now"s dissolve in together — one calm exhale that
+       closes out the sequence. */
     var allRingsDoneAt = (portalOrder.length - 1) * ringStagger + ringDuration;
-    /* Hardcoding the desktop rule width here ignores the mobile CSS
-       override, so the tween briefly forces the rule out to 205px — far
-       wider than the mobile canvas — before clearProps hands back to the
-       correct (much narrower) mobile width, reading as "Beauty Is
-       Balance" flying off-screen and snapping back. */
     ringTl.to(brandRules, {
       width: isMobile ? 72 : 95,
       duration: 1.3,
       stagger: 0.08,
       ease: 'power2.out',
       clearProps: 'width'
-    }, allRingsDoneAt + 0.15)
-      .to(core, {
-        opacity: 1,
-        duration: 0.9,
-        ease: 'power1.inOut',
-        clearProps: 'opacity'
-      }, allRingsDoneAt + 0.15);
+    }, 0.15);
+    ringTl.to(core, {
+      opacity: 1,
+      duration: 0.9,
+      ease: 'power1.inOut',
+      clearProps: 'opacity'
+    }, allRingsDoneAt + 0.15);
 
-    /* Watermark, tagline, and copyright all snap in together, once
-       "Beauty Is Balance" has finished easing open (rules take 1.3s) —
-       one quick simultaneous pop, not a staggered sequence. */
-    var rulesDoneAt = allRingsDoneAt + 0.15 + 1.3;
-    var subStart = rulesDoneAt + 0.25;
-    var subDuration = 0.35;
+    /* Watermark, tagline, and copyright all dissolve in together, right
+       after the rule lines finish opening (start 0.15, take 1.3s). */
+    var subStart = 0.15 + 1.3 + 0.25;
+    var subDuration = 1.1;
     ringTl.to([brandWatermark, brandSub, brandCopy], {
       opacity: function (i, target) {
-        return target === brandWatermark ? 0.26 : (target === brandCopy ? 0.38 : 1);
+        return target === brandWatermark ? 0.15 : (target === brandCopy ? 0.38 : 1);
       },
       duration: subDuration,
-      ease: 'power1.out'
+      ease: 'power1.inOut'
     }, subStart);
 
     /* Pure dissolve entrance: opacity only, everything already in its
