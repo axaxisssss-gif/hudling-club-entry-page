@@ -111,7 +111,6 @@
     var brandSub = document.querySelector('.brandline-sub');
     var brandCopy = document.querySelector('.brandline-copy');
     var brandWatermark = document.querySelector('.brandline-watermark');
-    var ringDraws = document.querySelectorAll('.portal-ring-draw');
     var portalOrder = ['outer', 'inner', 'wellness'];
     /* Each circle gets its own clean, unhurried fade (no overlap — that
        read as busy/cheap) but quicker than the original pace, with a
@@ -125,9 +124,6 @@
     if (reduced || typeof gsap === 'undefined') {
       reveals.forEach(function (el) {
         el.style.opacity = 1;
-      });
-      ringDraws.forEach(function (el) {
-        el.style.display = 'none';
       });
       return;
     }
@@ -163,13 +159,6 @@
     gsap.set(brandCopy, { opacity: 0 });
     gsap.set(brandWatermark, { opacity: 0 });
 
-    /* The ring-draw sweep (shooting-star line tracing the circle) is
-       retired — rings now just fade in via the CSS .portal-ring underneath,
-       no drawn/emphasized line on entrance. */
-    ringDraws.forEach(function (svg) {
-      svg.style.display = 'none';
-    });
-
     var ringTl = gsap.timeline();
     portalOrder.forEach(function (name, i) {
       var portal = document.querySelector('.portal--' + name);
@@ -185,6 +174,20 @@
         ease: ringEase,
         clearProps: 'opacity'
       }, at);
+      /* A much brighter twin of the ring (.portal-ring-flash) sits on top
+         at full strength the instant the circle lands, then dissolves
+         away to reveal the quiet, low-contrast resting line underneath —
+         a one-time emphasis on arrival rather than a permanently bright
+         ring. */
+      var ringFlash = portal.querySelector('.portal-ring-flash');
+      if (ringFlash) {
+        gsap.set(ringFlash, { opacity: 1 });
+        ringTl.to(ringFlash, {
+          opacity: 0,
+          duration: 1.3,
+          ease: 'power2.out'
+        }, at + ringDuration * 0.5);
+      }
     });
     /* Once all three circles are done, the center dot dissolves in and all
        three "Explore Now"s dissolve in together — one calm exhale that

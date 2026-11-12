@@ -291,6 +291,9 @@ img { -webkit-user-drag: none; user-select: none; }
   opacity: .06;
   filter: none;
 }
+.venn.is-focused .portal:not(.is-active) .portal-ring-draw {
+  opacity: .06;
+}
 .venn.is-focused .portal:not(.is-active) .portal-label {
   opacity: .58;
 }
@@ -369,43 +372,79 @@ img { -webkit-user-drag: none; user-select: none; }
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: none;
-  /* Same white all the way round, but opacity sweeps around the circle —
-     brightest at the top-left as if catching light, fading through the
-     bottom, so the band reads as lit rather than a flat painted ring.
-     Masked down to a 2px line. */
+  /* Real border (not a masked-down fill, which aliased badly) but with a
+     gradient running around it instead of one flat color, so the line
+     reads as catching light unevenly rather than a uniform, machine-drawn
+     ring. Static double-background + mask-composite trick (no animation,
+     no rotation) — this only ever paints once, so it can't shimmer. */
+  border: 2px solid transparent;
   background: conic-gradient(from 225deg,
-    rgba(255, 255, 255, 0.85) 0%,
-    rgba(255, 255, 255, 0.35) 35%,
-    rgba(255, 255, 255, 0.12) 55%,
-    rgba(255, 255, 255, 0.4) 80%,
-    rgba(255, 255, 255, 0.85) 100%);
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 0);
-  mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 0);
-  mix-blend-mode: screen;
-  opacity: .26;
-  filter: blur(0px);
-  transition: background .5s var(--ease-apple), box-shadow .5s var(--ease-apple), opacity .5s var(--ease-apple);
-  /* The lit point drifts around the ring instead of sitting fixed — a
-     living glint rather than a one-shot sweep. Rotating the whole
-     (perfectly circular, circularly-masked) element spins the gradient
-     with no visible seam. Each circle spins at its own speed/direction so
-     the three never read as one synced, mechanical loop. */
-  animation: ringGlowRotate 13s linear infinite;
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.05) 78%,
+    rgba(255, 255, 255, 0.25) 100%) border-box;
+  -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: .85;
+  transition: opacity .5s var(--ease-apple);
 }
+/* Each circle's lit point sits at a different angle, so the three never
+   read as stamped copies of the same ring. */
 .portal--inner .portal-ring {
-  animation-name: ringGlowRotateReverse;
-  animation-duration: 10s;
+  background: conic-gradient(from 100deg,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.05) 78%,
+    rgba(255, 255, 255, 0.25) 100%) border-box;
 }
 .portal--wellness .portal-ring {
-  animation-duration: 16s;
+  background: conic-gradient(from 320deg,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.05) 78%,
+    rgba(255, 255, 255, 0.25) 100%) border-box;
 }
 
-@keyframes ringGlowRotate {
-  to { transform: rotate(360deg); }
+/* One-time arrival flash: same ring, same mask trick, but with much
+   stronger stops — sits on top of .portal-ring and gets faded out by
+   main.js right after landing, so the circle reads as snapping into
+   sharp focus before settling into the quiet resting line underneath. */
+.portal-ring-flash {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  pointer-events: none;
+  opacity: 0;
+  background: conic-gradient(from 225deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.1) 40%,
+    rgba(255, 255, 255, 0.1) 60%,
+    rgba(255, 255, 255, 0.55) 78%,
+    rgba(255, 255, 255, 0.95) 100%) border-box;
+  -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }
-@keyframes ringGlowRotateReverse {
-  to { transform: rotate(-360deg); }
+.portal--inner .portal-ring-flash {
+  background: conic-gradient(from 100deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.1) 40%,
+    rgba(255, 255, 255, 0.1) 60%,
+    rgba(255, 255, 255, 0.55) 78%,
+    rgba(255, 255, 255, 0.95) 100%) border-box;
+}
+.portal--wellness .portal-ring-flash {
+  background: conic-gradient(from 320deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.1) 40%,
+    rgba(255, 255, 255, 0.1) 60%,
+    rgba(255, 255, 255, 0.55) 78%,
+    rgba(255, 255, 255, 0.95) 100%) border-box;
 }
 
 /* A wider, nearly-transparent band hugging the crisp line, so the ring has
@@ -415,22 +454,24 @@ img { -webkit-user-drag: none; user-select: none; }
   position: absolute;
   inset: -2px;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.06);
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 18px rgba(255, 255, 255, .25);
   pointer-events: none;
 }
 
 .portal:hover .portal-ring,
 .portal:focus-visible .portal-ring {
-  background: rgba(255, 255, 255, 0.85);
-  opacity: .16;
-  filter: blur(0px);
+  background: rgba(255, 255, 255, 0.15) border-box;
+  opacity: .6;
 }
 
-/* Entrance-only: traces the ring on as a drawn line, then hands off to the
-   permanent CSS border above. Not part of any interactive state.
-   Screen blend: the line adds light to whatever is behind it instead of
-   painting flat color over it, so it reads as a glowing filament lit by
-   the room rather than a stroke sitting on top of the photo. */
+/* Permanent living glint: a short bright arc that travels around the ring
+   forever. Pure SVG stroke animation (stroke-dashoffset) instead of a
+   rotating/recomputed gradient+mask — the browser just slides an existing
+   stroke along a fixed path, so there's nothing to repaint per frame and
+   nothing to shimmer. Normal blend, not screen — screen would amplify the
+   moving video underneath into its own flicker regardless of the glint's
+   own motion. */
 .portal-ring-draw {
   position: absolute;
   inset: 0;
@@ -438,22 +479,9 @@ img { -webkit-user-drag: none; user-select: none; }
   height: 100%;
   pointer-events: none;
   overflow: visible;
-  mix-blend-mode: screen;
 }
-.portal-ring-draw circle {
-  fill: none;
-  /* Plain white at reduced opacity — sinks into the wall's tones instead
-     of reading as its own color. */
-  stroke: rgba(245, 243, 239, 0.55);
-  stroke-width: 4.2;
-  stroke-linecap: round;
-}
-/* Shooting-star head: a filled, genuinely tapered arc (thick at the front,
-   thinning to nothing behind) that leads the drawn line around the circle.
-   The taper is real geometry (main.js builds the path), not a blur. */
-.ring-comet {
-  fill: rgba(255, 255, 255, 0.8);
-  stroke: none;
+.ring-glint {
+  display: none;
 }
 
 .portal-label {
@@ -603,11 +631,20 @@ img { -webkit-user-drag: none; user-select: none; }
   transform-origin: right center;
 }
 
+.brandline-sub--serif {
+  font-family: 'DM Serif Display', serif;
+  font-weight: 400;
+  font-size: 1.6em;
+}
+.brandline-sub--serif em {
+  font-style: italic;
+}
+
 .brandline-sub {
   margin: 28px 0 0;
   font-family: 'DM Sans', sans-serif;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 300;
   line-height: 1.6;
   letter-spacing: -0.3px;
   /* Softened off the raw cream — right under the circles, full-strength
@@ -625,37 +662,6 @@ img { -webkit-user-drag: none; user-select: none; }
 /* ---------- Film grain ---------- */
 
 /* A faint, flickering noise layer over the whole frame — reads as film
-   texture, not digital flatness. Kept extremely subtle (low opacity,
-   overlay blend) so it's felt more than seen. SVG feTurbulence noise,
-   tiled and nudged every frame via steps() for a true per-frame flicker
-   instead of a smooth, obviously-animated drift. */
-.film-grain {
-  position: fixed;
-  inset: -50%;
-  width: 200%;
-  height: 200%;
-  z-index: 30;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
-  opacity: .05;
-  mix-blend-mode: overlay;
-  animation: filmGrainFlicker 220ms steps(4) infinite;
-  will-change: transform;
-}
-
-@keyframes filmGrainFlicker {
-  0%   { transform: translate3d(0, 0, 0); }
-  25%  { transform: translate3d(-2%, 1%, 0); }
-  50%  { transform: translate3d(1%, -2%, 0); }
-  75%  { transform: translate3d(-1%, 2%, 0); }
-  100% { transform: translate3d(0, 0, 0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .film-grain { animation: none; }
-}
-
 /* ---------- Cinematic letterbox bars ---------- */
 
 /* Fixed top/bottom black bars, independent of the actual window aspect —
@@ -781,11 +787,10 @@ body::after { bottom: 0; }
   .portal-title { font-size: 24px; }
   .portal-cta { font-size: 12px; }
 
-  /* Thinner than desktop's 3px band + 5.5px glow — proportionate to a
-     smaller ring radius so it doesn't read as a thick painted band. */
+  /* Thinner than desktop's 2px border — proportionate to a smaller ring
+     radius so it doesn't read as a thick painted band. */
   .portal-ring {
-    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0);
-    mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0);
+    border-width: 1.5px;
   }
   .portal-ring::before {
     inset: -2.5px;
