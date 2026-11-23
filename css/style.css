@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   /* Cool navy/charcoal — matches the ocean background video (test.mp4)
      instead of the old room shot's warm brown-black. --gold/--gold-soft
      shifted the same way, from bronze to steel-blue. */
@@ -58,14 +58,17 @@ img { -webkit-user-drag: none; user-select: none; }
   z-index: 1;
   width: calc(var(--stage-w) * 1px);
   height: calc(var(--stage-h) * 1px);
-  /* .stage-outer is a flex container, and flex items shrink by default —
-     below a 1440px-wide viewport that silently squashed .stage's actual
+  /* .stage-outer is a flex container, and flex items shrink by default —      below a 1440px-wide viewport that silently squashed .stage's actual
      width (but not height, since align-items isn't stretch) out from under
      the 1440x1063 coordinate system every absolutely-positioned child
      (.venn included) assumes, throwing them off-center. All responsive
      sizing is meant to happen through main.js's transform: scale() alone. */
   flex-shrink: 0;
   transform-origin: center center;
+  /* Nudges the whole overlay (logo, venn, brand line — everything except
+     the background video, which lives in the sibling .ambient-scene and
+     stays put) down a bit from dead-center. */
+  margin-top: 28px;
   /* Transparent, not --ink — the background photo now lives behind this in
      .stage-outer, not inside .stage, and would otherwise be hidden by an
      opaque fill here. */
@@ -170,18 +173,17 @@ img { -webkit-user-drag: none; user-select: none; }
 .ambient-vignette {
   inset: 0;
   background:
-    radial-gradient(ellipse at center, transparent 36%, rgba(4, 3, 2, .16) 72%, rgba(4, 3, 2, .48) 100%),
-    linear-gradient(180deg, rgba(2, 2, 2, .14), transparent 25%, transparent 72%, rgba(2, 2, 2, .22));
+    radial-gradient(ellipse at center, transparent 36%, rgba(4, 3, 2, 0) 72%, rgba(4, 3, 2, .03) 100%),
+    linear-gradient(180deg, rgba(2, 2, 2, 0), transparent 25%, transparent 72%, rgba(2, 2, 2, 0));
 }
 
-/* A flat dark layer over the whole video, not just behind one element —
-   knocks the overall brightness down a step so the white text sitting on
+/* A flat dark layer over the whole video, not just behind one element —    knocks the overall brightness down a step so the white text sitting on
    top of it (logo, circles, brand line) reads clearly wherever it lands,
    without singling out any one spot. */
 .ambient-scrim {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, .3);
+  background: rgba(255, 255, 255, .06);
   display: block;
   pointer-events: none;
 }
@@ -209,9 +211,9 @@ img { -webkit-user-drag: none; user-select: none; }
 .logo-mark {
   position: absolute;
   left: 50%;
-  top: 160px;
-  width: 140px;
-  height: 62.1px;
+  top: 194px;
+  width: 126px;
+  height: 55.9px;
   transform: translate(-50%, 0);
   text-align: center;
   filter: drop-shadow(0 2px 18px rgba(0,0,0,0.45));
@@ -226,7 +228,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .venn {
   position: absolute;
   left: 478.8px;
-  top: 260px;
+  top: 275px;
   width: 482.4px;
   height: 440.1px;
 }
@@ -308,9 +310,31 @@ img { -webkit-user-drag: none; user-select: none; }
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, .06) 0%, rgba(255, 255, 255, .035) 60%, rgba(255, 255, 255, .015) 100%);
+  background: radial-gradient(ellipse at center, rgba(120, 110, 100, .22) 0%, rgba(120, 110, 100, .13) 60%, rgba(120, 110, 100, .06) 100%);
   opacity: 1;
   transition: opacity .55s var(--ease-apple);
+}
+/* A brighter twin of the idle fill that lives on top at opacity 0 and
+   breathes in only while the eclipse lap runs. Opacity interpolates
+   smoothly (unlike animating the gradient itself, which steps), so the
+   interior brightens and settles with no color snapping. */
+.portal-idle-veil::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(175, 162, 148, .2) 0%, rgba(175, 162, 148, .12) 60%, rgba(175, 162, 148, .06) 100%);
+  opacity: 0;
+}
+.portal.is-arriving .portal-idle-veil::after {
+  animation: arrivalWash 1.5s ease-in-out 1;
+}
+@keyframes arrivalWash {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  75%  { opacity: 1; }
+  100% { opacity: 0; }
+}
   pointer-events: none;
 }
 .portal:hover .portal-idle-veil,
@@ -340,7 +364,7 @@ img { -webkit-user-drag: none; user-select: none; }
 }
 .portal:hover .portal-window,
 .portal:focus-visible .portal-window {
-  opacity: .68;
+  opacity: .88;
   transform: scale(1);
   transition: opacity .85s var(--ease-reveal), transform .85s var(--ease-reveal), filter .45s var(--ease-apple);
 }
@@ -365,7 +389,7 @@ img { -webkit-user-drag: none; user-select: none; }
 
 .portal:hover .portal-window,
 .portal:focus-visible .portal-window {
-  filter: brightness(1.02) saturate(.98);
+  filter: brightness(1.1) saturate(.98);
 }
 
 .portal-ring {
@@ -379,11 +403,11 @@ img { -webkit-user-drag: none; user-select: none; }
      no rotation) — this only ever paints once, so it can't shimmer. */
   border: 2px solid transparent;
   background: conic-gradient(from 225deg,
-    rgba(255, 255, 255, 0.25) 0%,
-    rgba(255, 255, 255, 0) 40%,
-    rgba(255, 255, 255, 0) 60%,
-    rgba(255, 255, 255, 0.05) 78%,
-    rgba(255, 255, 255, 0.25) 100%) border-box;
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.06) 60%,
+    rgba(255, 255, 255, 0.12) 78%,
+    rgba(255, 255, 255, 0.32) 100%) border-box;
   -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -394,19 +418,19 @@ img { -webkit-user-drag: none; user-select: none; }
    read as stamped copies of the same ring. */
 .portal--inner .portal-ring {
   background: conic-gradient(from 100deg,
-    rgba(255, 255, 255, 0.25) 0%,
-    rgba(255, 255, 255, 0) 40%,
-    rgba(255, 255, 255, 0) 60%,
-    rgba(255, 255, 255, 0.05) 78%,
-    rgba(255, 255, 255, 0.25) 100%) border-box;
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.06) 60%,
+    rgba(255, 255, 255, 0.12) 78%,
+    rgba(255, 255, 255, 0.32) 100%) border-box;
 }
 .portal--wellness .portal-ring {
   background: conic-gradient(from 320deg,
-    rgba(255, 255, 255, 0.25) 0%,
-    rgba(255, 255, 255, 0) 40%,
-    rgba(255, 255, 255, 0) 60%,
-    rgba(255, 255, 255, 0.05) 78%,
-    rgba(255, 255, 255, 0.25) 100%) border-box;
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.06) 60%,
+    rgba(255, 255, 255, 0.12) 78%,
+    rgba(255, 255, 255, 0.32) 100%) border-box;
 }
 
 /* One-time arrival flash: same ring, same mask trick, but with much
@@ -414,6 +438,12 @@ img { -webkit-user-drag: none; user-select: none; }
    main.js right after landing, so the circle reads as snapping into
    sharp focus before settling into the quiet resting line underneath. */
 .portal-ring-flash {
+  /* Retired: the arrival emphasis is now the sequential eclipse lap
+     (.portal::before/::after). Running both at once drew a doubled line
+     on Outer, whose lap overlaps the old flash's dissolve window. JS
+     still animates this node's opacity, so it must stay display:none
+     rather than deleted. */
+  display: none;
   position: absolute;
   inset: 0;
   border-radius: 50%;
@@ -424,7 +454,7 @@ img { -webkit-user-drag: none; user-select: none; }
     rgba(255, 255, 255, 0.5) 0%,
     rgba(255, 255, 255, 0.06) 40%,
     rgba(255, 255, 255, 0.06) 60%,
-    rgba(255, 255, 255, 0.28) 78%,
+    rgba(255, 255, 255, 0.12) 78%,
     rgba(255, 255, 255, 0.5) 100%) border-box;
   -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -435,7 +465,7 @@ img { -webkit-user-drag: none; user-select: none; }
     rgba(255, 255, 255, 0.5) 0%,
     rgba(255, 255, 255, 0.06) 40%,
     rgba(255, 255, 255, 0.06) 60%,
-    rgba(255, 255, 255, 0.28) 78%,
+    rgba(255, 255, 255, 0.12) 78%,
     rgba(255, 255, 255, 0.5) 100%) border-box;
 }
 .portal--wellness .portal-ring-flash {
@@ -443,20 +473,87 @@ img { -webkit-user-drag: none; user-select: none; }
     rgba(255, 255, 255, 0.5) 0%,
     rgba(255, 255, 255, 0.06) 40%,
     rgba(255, 255, 255, 0.06) 60%,
-    rgba(255, 255, 255, 0.28) 78%,
+    rgba(255, 255, 255, 0.12) 78%,
     rgba(255, 255, 255, 0.5) 100%) border-box;
 }
 
-/* A wider, nearly-transparent band hugging the crisp line, so the ring has
-   a soft body instead of being one bare hairline. */
-.portal-ring::before {
+/* Eclipse-style halo + orbiting hotspot (李멸퀬鍮꾨뵒— . These CANNOT live
+   inside .portal-ring — its border-only mask (mask-composite: exclude)
+   clips every descendant, pseudo-elements included, down to the 2px band.
+   So both layers sit on .portal itself, outside the mask. */
+
+/* Cool blue-white corona bleeding out from the rim, like the light around
+   the black disc in the reference video. */
+.portal::before {
   content: '';
   position: absolute;
-  inset: -2px;
+  inset: 0;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 18px rgba(255, 255, 255, .25);
+  /* No border here — the crisp line is .portal-ring's job; a second
+     stroke at a slightly different radius read as a doubled line. This
+     layer only carries the soft outward glow. */
+  box-shadow: 0 0 40px rgba(255, 238, 215, .28), 0 0 90px rgba(255, 228, 195, .15), 0 0 140px rgba(255, 220, 180, .07);
   pointer-events: none;
+  opacity: 0;
+  /* Glows with the arrival lap, then fades out with it — no permanent
+     halo. No CSS delay: main.js adds .is-arriving to each portal at the
+     exact moment its circle starts fading in, so the light and the
+     circle/label always move together regardless of load timing. */
+}
+.portal.is-arriving::before {
+  animation: eclipseHalo 1.5s ease-in-out 1 forwards;
+}
+
+@keyframes eclipseHalo {
+  0%   { opacity: 0; }
+  15%  { opacity: 1; }
+  75%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* The "diamond ring" hotspot: one blazing point of light sitting right on
+   the rim, slowly orbiting the circle. A tiny radial burst painted at the
+   top edge of an invisible disc, then the whole disc rotates — pure GPU
+   transform, nothing repaints per frame. */
+.portal::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  /* Soft comet of light sweeping the rim — a long arc that brightens
+     toward its head instead of a hard dot. The conic gradient paints the
+     arc, the radial mask confines it to a thin band hugging the ring,
+     and a touch of blur melts it into the rim light. */
+  /* The head peaks just before 360° and tapers back to nothing — both
+     ends of the arc dissolve gradually, so the light reads as a soft
+     gliding sheen rather than a stick with a chopped-off tip. */
+  background: conic-gradient(from 0deg,
+    transparent 0deg,
+    transparent 252deg,
+    rgba(255, 225, 185, .1) 288deg,
+    rgba(255, 240, 215, .45) 324deg,
+    rgba(255, 250, 240, .85) 344deg,
+    rgba(255, 240, 215, .25) 355deg,
+    transparent 360deg);
+  /* Band pushed flush against the outer edge — no inner offset, so the
+     comet rides exactly on the ring's outline. */
+  -webkit-mask: radial-gradient(closest-side, transparent 98.4%, #000 99.2%, #000 100%);
+  mask: radial-gradient(closest-side, transparent 98.4%, #000 99.2%, #000 100%);
+  filter: blur(.8px);
+  pointer-events: none;
+  opacity: 0;
+  /* One lap only, triggered by .is-arriving in sync with the circle's
+     own fade-in — then it's gone for good. */
+}
+.portal.is-arriving::after {
+  animation: eclipseOrbit 1.5s linear 1 forwards;
+}
+
+@keyframes eclipseOrbit {
+  0%   { transform: rotate(0deg); opacity: 0; }
+  6%   { opacity: 1; }
+  72%  { opacity: 1; }
+  100% { transform: rotate(360deg); opacity: 0; }
 }
 
 .portal:hover .portal-ring,
@@ -515,7 +612,10 @@ img { -webkit-user-drag: none; user-select: none; }
 }
 
 .portal-cta {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   text-align: center;
   font-family: 'DM Sans', sans-serif;
   font-weight: 300;
@@ -523,12 +623,20 @@ img { -webkit-user-drag: none; user-select: none; }
   color: var(--grey-200);
   white-space: nowrap;
   /* Quiet at rest — only asserts itself once the photo is up on hover. */
-  opacity: 0.4;
+  opacity: 0.55;
   transition: opacity .5s var(--ease-apple);
+}
+.portal-cta-arrow {
+  display: inline-block;
+  transition: transform .5s var(--ease-apple);
 }
 .portal:hover .portal-cta,
 .portal:focus-visible .portal-cta {
   opacity: 1;
+}
+.portal:hover .portal-cta-arrow,
+.portal:focus-visible .portal-cta-arrow {
+  transform: translateX(3px);
 }
 
 /* ---------- Brand line ---------- */
@@ -537,7 +645,7 @@ img { -webkit-user-drag: none; user-select: none; }
   position: absolute;
   left: 0;
   right: 0;
-  top: 737px;
+  top: 722px;
   text-align: center;
   transform: translateY(14px);
 }
@@ -545,32 +653,15 @@ img { -webkit-user-drag: none; user-select: none; }
 .brandline-row {
   position: relative;
   height: 40px;
-}
-
-/* "Beauty"/rule sit to the left of the fixed IS logo, "Balance"/rule to the
-   right — each anchored by the edge nearest IS via --brand-gap (see main.js:
-   it drives both the internal rule<->word spacing AND the distance out from
-   IS, so at rest it's 0 (everything touches, reading as a tight "BIB") and
-   animates out to 14px together with the rule/word-reveal tweens). Because
-   IS itself is positioned independently below, it never moves as these grow
-   asymmetrically (Beauty and Balance are different lengths). */
-.brandline-left,
-.brandline-right {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
   display: flex;
   align-items: center;
-  gap: var(--brand-gap, 6px);
-  white-space: nowrap;
+  justify-content: center;
 }
-.brandline-left  { right: calc(50% + 12px + var(--brand-gap, 6px)); }
-.brandline-right { left:  calc(50% + 12px + var(--brand-gap, 6px)); }
 
 .brandline-word {
-  font-family: 'DM Serif Display', serif;
-  font-style: italic;
-  font-size: 30px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 26px;
   letter-spacing: -0.02em;
   color: var(--cream);
   opacity: 0.68;
@@ -578,70 +669,14 @@ img { -webkit-user-drag: none; user-select: none; }
   white-space: nowrap;
 }
 
-.brandline-word--is {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 40px;
-  mix-blend-mode: normal;
-}
-.brandline-watermark {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 130px;
-  height: 38.1px;
-  transform: translate(-50%, -50%);
-  opacity: 0.15;
-  mix-blend-mode: soft-light;
-  pointer-events: none;
-}
-.brandline-word--is span {
-  position: relative;
-  z-index: 1;
-  mix-blend-mode: overlay;
-  color: var(--cream);
-}
-
-/* Each word ("Beauty"/"Is"/"Balance") stays a single, unsplit text node and
-   is always shown in full — only the rule length and the gap around it
-   animate, pulling the words together into a tight cluster at rest and
-   apart on entrance. Never split into separate elements: letter-spacing
-   across an element boundary is inconsistent, and this way it can't be. */
 .bl-word {
   display: inline-block;
   white-space: nowrap;
   vertical-align: bottom;
 }
 
-.brandline-rule {
-  width: 95px;
-  height: 1.5px;
-  background: linear-gradient(to right, rgba(245,243,239,0), rgba(245,243,239,0.55));
-  mix-blend-mode: normal;
-}
-
-.brandline-right .brandline-rule {
-  background: linear-gradient(to left, rgba(245,243,239,0), rgba(245,243,239,0.55));
-  transform-origin: right center;
-}
-
-.brandline-sub--serif {
-  font-family: 'DM Serif Display', serif;
-  font-weight: 400;
-  font-size: 1.4em;
-}
-.brandline-sub--serif em {
-  font-style: italic;
-}
-
 .brandline-sub {
-  margin: 16px 0 0;
+  margin: 8px 0 0;
   font-family: 'DM Sans', sans-serif;
   font-size: 16px;
   font-weight: 300;
@@ -653,7 +688,7 @@ img { -webkit-user-drag: none; user-select: none; }
 }
 
 .brandline-copy {
-  margin: 22px 0 0;
+  margin: 12px 0 0;
   font-size: 13px;
   color: #f5f3ef;
   opacity: 0.38;
@@ -664,8 +699,7 @@ img { -webkit-user-drag: none; user-select: none; }
 /* A faint, flickering noise layer over the whole frame — reads as film
 /* ---------- Cinematic letterbox bars ---------- */
 
-/* Fixed top/bottom black bars, independent of the actual window aspect —
-   the "widescreen film" frame, not a derived leftover-space fill (the
+/* Fixed top/bottom black bars, independent of the actual window aspect —    the "widescreen film" frame, not a derived leftover-space fill (the
    stage's own 1440:1063 ratio is narrower than most monitors, so relying
    on real letterboxing would put the gap on the sides, not top/bottom). */
 body::before,
@@ -697,7 +731,7 @@ body::after { bottom: 0; }
 @media (prefers-reduced-motion: reduce) {
   .portal, .portal-window, .portal-ring, .portal-label,
   .hero-bg, .reveal, .ambient-light, .ambient-shadow,
-  .portal-ring-draw, .venn-core {
+  .portal-ring-draw, .venn-core, .portal::before, .portal::after {
     transition: none !important;
     animation: none !important;
   }
@@ -718,8 +752,7 @@ body::after { bottom: 0; }
    fitStage()), sized close to an actual phone's proportions, so circle
    sizes given here are close to their real on-screen size rather than
    shrunk again by an outsized scale factor.
-   Same JS timeline as desktop (entrance, ring-draw, hover, click veil) —
-   only geometry changes here: three circles, same order (Inner, Outer,
+   Same JS timeline as desktop (entrance, ring-draw, hover, click veil) —    only geometry changes here: three circles, same order (Inner, Outer,
    Wellness) top to bottom, pulled close enough to overlap slightly. */
 @media (max-width: 760px) {
   /* main.js's fitStage() already scales the mobile canvas by
@@ -737,11 +770,10 @@ body::after { bottom: 0; }
      even before anything animates in, not just whatever's left over. */
   :root {
     --stage-w: 430;
-    --stage-h: 975;
+    --stage-h: 760;
   }
 
-  /* Logo is the smallest thing on the page relative to the circles here —
-     shrunk further so the three circles (the actual navigation) clearly
+  /* Logo is the smallest thing on the page relative to the circles here —      shrunk further so the three circles (the actual navigation) clearly
      read as the lead element, with real breathing room above it and a
      real gap before the first circle (not just touching it). */
   .logo-mark {
@@ -750,11 +782,14 @@ body::after { bottom: 0; }
     height: 51px;
   }
 
+  /* Same triangle venn as desktop, scaled by 220/279 ≈ 0.789 and centered
+     in the 430px mobile canvas — the client wants the three circles
+     gathered in the middle, not a vertical column. */
   .venn {
-    left: 105px;
-    top: 132px;
-    width: 220px;
-    height: 580px;
+    left: 25px;
+    top: 130px;
+    width: 380px;
+    height: 347px;
   }
 
   .portal--outer,
@@ -764,62 +799,43 @@ body::after { bottom: 0; }
     height: 220px;
   }
 
-  .portal--outer    { left: 0px; top: 0px;   z-index: 3; }
-  .portal--inner    { left: 0px; top: 180px; z-index: 2; }
-  .portal--wellness { left: 0px; top: 360px; z-index: 1; }
+  .portal--outer    { left: 79.5px; top: 0px;   z-index: 3; }
+  .portal--inner    { left: 0px;    top: 127px; z-index: 2; }
+  .portal--wellness { left: 160.4px; top: 127px; z-index: 2; }
 
-  /* True dead-center (both axes) instead of a hand-picked offset — no
-     neighbor to dodge in a single column, so there's no reason for the
-     label to sit anywhere but the middle of its own circle. */
-  .portal--outer    .portal-label,
-  .portal--inner    .portal-label,
-  .portal--wellness .portal-label {
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 130px;
-    gap: 7px;
-  }
-  .portal:hover .portal-label,
-  .portal:focus-visible .portal-label {
-    transform: translate(-50%, calc(-50% - 3px));
-  }
-  .portal-title { font-size: 24px; }
-  .portal-cta { font-size: 12px; }
+  /* Desktop's petal offsets, scaled — each label pushed out toward the
+     non-overlapping part of its own circle, clear of the neighbors. */
+  .portal--outer    .portal-label { left: 68px; top: 53px; width: 84px; gap: 7px; }
+  .portal--inner    .portal-label { left: 50px; top: 90px; width: 84px; gap: 7px; }
+  .portal--wellness .portal-label { left: 83px; top: 88px; width: 84px; gap: 7px; }
+  .portal-title { font-size: 23px; }
+  .portal-cta { font-size: 11px; }
 
   /* Thinner than desktop's 2px border — proportionate to a smaller ring
      radius so it doesn't read as a thick painted band. */
   .portal-ring {
-    border-width: 1.5px;
-  }
-  .portal-ring::before {
-    inset: -2.5px;
-    border-width: 4px;
+    border-width: 2px;
   }
 
-  /* No single triple-overlap point exists in a column layout, so the dot
-     that marked it is retired here rather than left floating oddly. */
+  /* Triangle layout has a real triple-overlap point again, so the center
+     dot comes back — desktop position/size scaled by the same 0.789. */
   .venn-core {
-    display: none;
+    left: 173.6px;
+    top: 182px;
+    width: 33px;
+    height: 33px;
   }
 
   /* top + its permanent 14px translateY + row/sub/copy stack lands with
      a real margin above the bottom edge instead of running flush to it. */
   .brandline {
-    top: 737px;
+    top: 480px;
   }
-  .brandline-rule { width: 72px; }
   .brandline-word { font-size: 25px; }
   /* Tighter than desktop's 44px — "Beauty Is Balance" and the tagline
      read as one connected block instead of two separated ones. */
-  .brandline-sub { font-size: 15px; margin-top: 22px; }
+  .brandline-sub { font-size: 15px; margin-top: 8px; }
   .brandline-copy { font-size: 11px; margin-top: 12px; }
-  /* Shrunk to match the smaller "Is" it sits behind at this scale — at
-     full desktop size it overflowed well past the mobile canvas width. */
-  .brandline-watermark {
-    width: 110px;
-    height: 32.3px;
-  }
 
   body::before,
   body::after {

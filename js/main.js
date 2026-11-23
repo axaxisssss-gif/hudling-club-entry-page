@@ -8,7 +8,7 @@
      already-small mobile-authored size — a separate canvas close to a
      phone's own proportions keeps circles at a genuinely tappable size. */
   var STAGE_W_MOBILE = 430;
-  var STAGE_H_MOBILE = 975;
+  var STAGE_H_MOBILE = 760;
   var mobileQuery = window.matchMedia('(max-width: 760px)');
 
   var stageOuter = document.querySelector('.stage-outer');
@@ -23,7 +23,9 @@
      this point rather than keep shrinking (the venn/logo sit centered,
      well clear of the edges, so cropping never touches them in this
      narrow band before mobile takes over). */
-  var MIN_DESKTOP_SCALE = 0.75;
+  /* 220/279 — the floor matches the mobile circle size exactly, so the
+     desktop layout never renders its circles smaller than mobile's. */
+  var MIN_DESKTOP_SCALE = 0.789;
 
   /* Keep the original art direction centered while fitting every viewport. */
   function fitStage() {
@@ -34,6 +36,15 @@
     var vh = stageOuter.clientHeight;
     var scale = Math.min(vw / w, vh / h);
     if (!isMobile) {
+      /* Tall/narrow desktop windows: fitting the full 1440px canvas width
+         makes everything tiny while most of that width is empty video.
+         All real content (logo, venn, brand line) lives inside the center
+         ~1000px, so let the stage scale up to fill the height and crop
+         the empty sides instead — as long as that center band still fits. */
+      /* The widest real content is the venn triangle (~482px centered)
+         — 600 leaves it ~60px of side margin at the crop limit. */
+      var SAFE_CONTENT_W = 600;
+      scale = Math.min(vh / h, Math.max(vw / w, Math.min(vw / SAFE_CONTENT_W, vh / h)));
       scale = Math.max(scale, MIN_DESKTOP_SCALE);
     }
     stage.style.transform = 'scale(' + scale + ')';
@@ -107,17 +118,19 @@
     var core = document.querySelector('.venn-core');
     var brandline = document.querySelector('.brandline');
     var brandRow = document.querySelector('.brandline-row');
-    var brandRules = document.querySelectorAll('.brandline-rule');
     var brandSub = document.querySelector('.brandline-sub');
     var brandCopy = document.querySelector('.brandline-copy');
-    var brandWatermark = document.querySelector('.brandline-watermark');
     var portalOrder = ['outer', 'inner', 'wellness'];
     /* Each circle gets its own clean, unhurried fade (no overlap — that
        read as busy/cheap) but quicker than the original pace, with a
        weighted deceleration instead of a flat linear glide so each arrival
        feels settled rather than abrupt. */
     var ringDuration = 0.95;
-    var ringStagger = ringDuration;
+    /* Matched to the 3.4s eclipse lap (minus its fade-out tail): each
+       circle arrives — with its label and its lap of light — right as
+       the previous circle's lap hands off, one after another, never
+       overlapping laps. */
+    var ringStagger = 1.2;
     var ringEases = ['power2.out', 'power2.out', 'power2.out'];
     var dimOpacity = 0.18;
 
@@ -137,27 +150,14 @@
        rides straight up and Wellness rides straight down into their
        final spots — a clean vertical gather-then-separate, no sideways
        motion. */
-    if (isMobile) {
-      var outerPortal = document.querySelector('.portal--outer');
-      var innerPortal = document.querySelector('.portal--inner');
-      var wellnessPortal = document.querySelector('.portal--wellness');
-      gsap.set(outerPortal, { y: 180 });
-      gsap.set(innerPortal, { y: 0 });
-      gsap.set(wellnessPortal, { y: -180 });
-    }
+    /* Mobile used to gather-then-separate; now it's the same triangle
+       venn as desktop, so both share the identical pure-dissolve
+       entrance — no positional motion anywhere. */
     gsap.set(core, { opacity: 0 });
     gsap.set(brandline, { opacity: 1 });
     gsap.set(brandRow, { opacity: 0 });
-    /* Real layout width, not a transform — .brandline-left/-right are
-       right/left-anchored flex boxes, so shrinking the rule's actual width
-       pulls "Beauty"/"Balance" in close to "Is" at rest, and growing it
-       back out is what physically pushes the words apart later. */
-    gsap.set(brandRules, { width: 0 });
-    /* Tagline dissolves in as one block, once "Beauty Is Balance" has
-       fully opened. */
     gsap.set(brandSub, { opacity: 0 });
     gsap.set(brandCopy, { opacity: 0 });
-    gsap.set(brandWatermark, { opacity: 0 });
 
     var ringTl = gsap.timeline();
     portalOrder.forEach(function (name, i) {
@@ -174,6 +174,12 @@
         ease: ringEase,
         clearProps: 'opacity'
       }, at);
+      /* Fire the one-shot eclipse lap (CSS .is-arriving::before/::after)
+         at the same instant this circle starts fading in, so the light,
+         the ring, and the label all arrive as one motion. */
+      ringTl.call(function () {
+        portal.classList.add('is-arriving');
+      }, null, at);
       /* A much brighter twin of the ring (.portal-ring-flash) sits on top
          at full strength the instant the circle lands, then dissolves
          away to reveal the quiet, low-contrast resting line underneath —
@@ -193,13 +199,6 @@
        three "Explore Now"s dissolve in together — one calm exhale that
        closes out the sequence. */
     var allRingsDoneAt = (portalOrder.length - 1) * ringStagger + ringDuration;
-    ringTl.to(brandRules, {
-      width: isMobile ? 72 : 95,
-      duration: 1.3,
-      stagger: 0.08,
-      ease: 'power2.out',
-      clearProps: 'width'
-    }, 0.15);
     ringTl.to(core, {
       opacity: 1,
       duration: 0.9,
@@ -207,35 +206,24 @@
       clearProps: 'opacity'
     }, allRingsDoneAt + 0.15);
 
-    /* Watermark, tagline, and copyright all dissolve in together, right
-       after the rule lines finish opening (start 0.15, take 1.3s). */
+    /* Tagline and copyright dissolve in together, right after the brand
+       row itself has faded in. */
     var subStart = 0.15 + 1.3 + 0.25;
     var subDuration = 1.1;
-    ringTl.to([brandWatermark, brandSub, brandCopy], {
+    ringTl.to([brandSub, brandCopy], {
       opacity: function (i, target) {
-        return target === brandWatermark ? 0.15 : (target === brandCopy ? 0.38 : 1);
+        return target === brandCopy ? 0.38 : 1;
       },
       duration: subDuration,
       ease: 'power1.inOut'
     }, subStart);
 
     /* Pure dissolve entrance: opacity only, everything already in its
-       final position (desktop) — mobile adds the gather-then-separate
-       move on top, so the ring-draw sequence is pushed back until after
-       the circles have finished settling into their column spots. */
-    var ringTlStart = isMobile ? 1.05 : 0.32;
+       final position — identical on desktop and mobile. */
+    var ringTlStart = 0.32;
     var finalTl = gsap.timeline({ defaults: { ease: 'power1.inOut' } })
       .to(logo, { opacity: 1, duration: 1.1 }, 0)
       .to(portals, { opacity: dimOpacity, duration: 0.2 }, 0.08);
-
-    if (isMobile) {
-      finalTl.to([outerPortal, innerPortal, wellnessPortal], {
-        y: 0,
-        duration: 0.8,
-        stagger: 0.05,
-        ease: 'power3.out'
-      }, 0.15);
-    }
 
     finalTl
       .add(ringTl, ringTlStart)
