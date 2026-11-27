@@ -70,18 +70,31 @@
     var heroStill = document.getElementById('heroBg');
     var currentBg = null;
 
+    /* The video only fades in once frames are actually advancing — the
+       'playing' event, not loadeddata — so a blocked/paused video never
+       sits on screen as a frozen frame pretending to be the background. */
+    heroVideo.addEventListener('playing', showVideo);
+    heroVideo.addEventListener('pause', function () {
+      /* e.g. iOS pausing a background video — fall back to the still. */
+      if (!document.hidden) ambientScene.classList.remove('is-video-ready');
+    });
+
     function tryPlay() {
       var playPromise = heroVideo.play();
       if (playPromise && typeof playPromise.catch === 'function') {
         playPromise.catch(function () {
           /* Autoplay refused (iOS Low Power Mode, data saver, …) — the
-             poster still carries the scene, and the first real touch
-             anywhere retries with the user gesture attached. */
+             poster still carries the scene, and any touch or click
+             retries with the user gesture attached, until one sticks. */
           ambientScene.classList.remove('is-video-ready');
-          document.addEventListener('touchend', function retry() {
-            document.removeEventListener('touchend', retry);
-            heroVideo.play().catch(function () {});
-          });
+          function retry() {
+            heroVideo.play().then(function () {
+              document.removeEventListener('touchend', retry);
+              document.removeEventListener('click', retry);
+            }).catch(function () {});
+          }
+          document.addEventListener('touchend', retry);
+          document.addEventListener('click', retry);
         });
       }
     }
@@ -99,9 +112,9 @@
       ambientScene.classList.remove('is-video-ready');
       heroVideo.src = want;
       heroVideo.addEventListener('loadeddata', function () {
-        /* load() can reset playbackRate in some browsers — reapply. */
+        /* load() can reset playbackRate in some browsers — reapply.
+           (Visibility is handled by the 'playing' listener above.) */
         heroVideo.playbackRate = 0.75;
-        showVideo();
       }, { once: true });
       tryPlay();
     }
