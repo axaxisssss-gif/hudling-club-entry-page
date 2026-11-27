@@ -65,12 +65,37 @@
        live if the viewport crosses the breakpoint. */
     var DESKTOP_BG = 'assets/bg_pc.mp4';
     var MOBILE_BG = 'assets/bg_mobile.mp4';
+    var DESKTOP_POSTER = 'assets/bg_pc-poster.jpg';
+    var MOBILE_POSTER = 'assets/bg_mobile-poster.jpg';
+    var heroStill = document.getElementById('heroBg');
     var currentBg = null;
 
+    function tryPlay() {
+      var playPromise = heroVideo.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(function () {
+          /* Autoplay refused (iOS Low Power Mode, data saver, …) — the
+             poster still carries the scene, and the first real touch
+             anywhere retries with the user gesture attached. */
+          ambientScene.classList.remove('is-video-ready');
+          document.addEventListener('touchend', function retry() {
+            document.removeEventListener('touchend', retry);
+            heroVideo.play().catch(function () {});
+          });
+        });
+      }
+    }
+
     function loadHeroSource() {
-      var want = mobileQuery.matches ? MOBILE_BG : DESKTOP_BG;
+      var isMobileBg = mobileQuery.matches;
+      var want = isMobileBg ? MOBILE_BG : DESKTOP_BG;
       if (want === currentBg) return;
       currentBg = want;
+      var poster = isMobileBg ? MOBILE_POSTER : DESKTOP_POSTER;
+      /* The still/poster swap with the video, so even before (or without)
+         playback the right aspect scene shows instead of a black wall. */
+      if (heroStill) heroStill.src = poster;
+      heroVideo.poster = poster;
       ambientScene.classList.remove('is-video-ready');
       heroVideo.src = want;
       heroVideo.addEventListener('loadeddata', function () {
@@ -78,12 +103,7 @@
         heroVideo.playbackRate = 0.75;
         showVideo();
       }, { once: true });
-      var playPromise = heroVideo.play();
-      if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(function () {
-          ambientScene.classList.remove('is-video-ready');
-        });
-      }
+      tryPlay();
     }
 
     loadHeroSource();
@@ -282,7 +302,9 @@
        the photo is already showing from hover, so the fade starts
        almost immediately. */
     var touch = window.matchMedia('(hover: none)').matches;
-    var holdBeforeFade = touch ? 0.95 : 0.15;
+    /* Long enough to register the photo, short enough that the page never
+       feels hung — total tap-to-navigate lands around 0.9s. */
+    var holdBeforeFade = touch ? 0.4 : 0.15;
 
     venn.classList.add('is-focused');
     portal.classList.add('is-active');
@@ -312,6 +334,6 @@
       tl.to(win, { opacity: 0.9, duration: 0.5, ease: 'power2.out' }, 0);
       if (idleVeil) tl.to(idleVeil, { opacity: 0, duration: 0.45, ease: 'power2.out' }, 0);
     }
-    tl.to(veil, { opacity: 1, duration: 0.7, ease: 'power1.inOut' }, holdBeforeFade);
+    tl.to(veil, { opacity: 1, duration: touch ? 0.5 : 0.7, ease: 'power1.inOut' }, holdBeforeFade);
   }
 })();
