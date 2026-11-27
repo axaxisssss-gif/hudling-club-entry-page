@@ -56,23 +56,39 @@
   /* The source loop is deliberately slowed so the light feels environmental,
      not like a five-second background clip. The still remains underneath. */
   if (heroVideo && !reduced) {
-    heroVideo.playbackRate = 0.75;
-
     function showVideo() {
       ambientScene.classList.add('is-video-ready');
     }
 
-    if (heroVideo.readyState >= 2) {
-      showVideo();
-    } else {
-      heroVideo.addEventListener('loadeddata', showVideo, { once: true });
+    /* Phones get their own 9:16 cut of the background; desktop keeps the
+       wide one. Picked by the same 760px query as the layout, and swapped
+       live if the viewport crosses the breakpoint. */
+    var DESKTOP_BG = 'assets/bg_pc.mp4';
+    var MOBILE_BG = 'assets/bg_mobile.mp4';
+    var currentBg = null;
+
+    function loadHeroSource() {
+      var want = mobileQuery.matches ? MOBILE_BG : DESKTOP_BG;
+      if (want === currentBg) return;
+      currentBg = want;
+      ambientScene.classList.remove('is-video-ready');
+      heroVideo.src = want;
+      heroVideo.addEventListener('loadeddata', function () {
+        /* load() can reset playbackRate in some browsers — reapply. */
+        heroVideo.playbackRate = 0.75;
+        showVideo();
+      }, { once: true });
+      var playPromise = heroVideo.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(function () {
+          ambientScene.classList.remove('is-video-ready');
+        });
+      }
     }
 
-    var playPromise = heroVideo.play();
-    if (playPromise && typeof playPromise.catch === 'function') {
-      playPromise.catch(function () {
-        ambientScene.classList.remove('is-video-ready');
-      });
+    loadHeroSource();
+    if (mobileQuery.addEventListener) {
+      mobileQuery.addEventListener('change', loadHeroSource);
     }
 
     document.addEventListener('visibilitychange', function () {
@@ -256,18 +272,46 @@
 
     var veil = document.getElementById('zoomVeil');
     var win = portal.querySelector('.portal-window');
+    var idleVeil = portal.querySelector('.portal-idle-veil');
     veil.style.pointerEvents = 'auto';
 
-    /* Simple, natural crossfade: show the tapped circle's photo (there's
-       no hover on touch to have already revealed it), then the whole
-       page dissolves to black before the next page loads. */
+    /* Touch devices have no hover, so the tap itself plays the reveal:
+       the chosen circle lights up with its photo (others dim via the
+       same focus state hover uses), holds long enough to actually be
+       seen, then the page dissolves to black and navigates. On desktop
+       the photo is already showing from hover, so the fade starts
+       almost immediately. */
+    var touch = window.matchMedia('(hover: none)').matches;
+    var holdBeforeFade = touch ? 0.95 : 0.15;
+
+    venn.classList.add('is-focused');
+    portal.classList.add('is-active');
+
     var tl = gsap.timeline({
       onComplete: function () {
         window.location.href = href;
       }
     });
 
-    tl.to(win, { opacity: 0.9, duration: 0.5, ease: 'power2.out' }, 0)
-      .to(veil, { opacity: 1, duration: 0.7, ease: 'power1.inOut' }, 0.15);
+    /* Touch: a fast fade — quick enough to feel like immediate tap
+       feedback, soft enough to not pop. The inline transition:none keeps
+       the stylesheet's slow .7s ease from fighting gsap's timing. */
+    if (touch) {
+      /* Mirror the desktop :hover reveal exactly (opacity .88, scale 1,
+         brightened filter) so the tapped photo reads the same on both. */
+      tl.to(win, {
+        opacity: 0.88,
+        scale: 1,
+        filter: 'brightness(1.1) saturate(.98)',
+        duration: 0.22,
+        ease: 'power2.out',
+        transition: 'none'
+      }, 0);
+      if (idleVeil) tl.to(idleVeil, { opacity: 0, duration: 0.22, ease: 'power2.out', transition: 'none' }, 0);
+    } else {
+      tl.to(win, { opacity: 0.9, duration: 0.5, ease: 'power2.out' }, 0);
+      if (idleVeil) tl.to(idleVeil, { opacity: 0, duration: 0.45, ease: 'power2.out' }, 0);
+    }
+    tl.to(veil, { opacity: 1, duration: 0.7, ease: 'power1.inOut' }, holdBeforeFade);
   }
 })();

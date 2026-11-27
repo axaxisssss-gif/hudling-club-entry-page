@@ -313,6 +313,7 @@ img { -webkit-user-drag: none; user-select: none; }
   background: radial-gradient(ellipse at center, rgba(120, 110, 100, .22) 0%, rgba(120, 110, 100, .13) 60%, rgba(120, 110, 100, .06) 100%);
   opacity: 1;
   transition: opacity .55s var(--ease-apple);
+  pointer-events: none;
 }
 /* A brighter twin of the idle fill that lives on top at opacity 0 and
    breathes in only while the eclipse lap runs. Opacity interpolates
@@ -334,8 +335,6 @@ img { -webkit-user-drag: none; user-select: none; }
   20%  { opacity: 1; }
   75%  { opacity: 1; }
   100% { opacity: 0; }
-}
-  pointer-events: none;
 }
 .portal:hover .portal-idle-veil,
 .portal:focus-visible .portal-idle-veil {
@@ -773,13 +772,35 @@ body::after { bottom: 0; }
     --stage-h: 760;
   }
 
+  /* Desktop nudges the stage 28px below dead-center; on phones the canvas
+     itself is already balanced (equal breathing room above the logo and
+     below the copyright), so the whole thing pins to the exact vertical
+     center of whatever screen height it lands on. */
+  .stage {
+    margin-top: 0;
+  }
+
+  /* Phones keep cover (fills every screen, no bands — sides crop a bit on
+     screens taller than the 9:16 video) but drop desktop's extra 2% bleed
+     + 1.045 zoom, so no more of the frame is lost than cover requires. */
+  .hero-bg {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
+  }
+
   /* Logo is the smallest thing on the page relative to the circles here —      shrunk further so the three circles (the actual navigation) clearly
      read as the lead element, with real breathing room above it and a
      real gap before the first circle (not just touching it). */
+  /* Whole stack (logo → copyright) sits ~32px lower than the first pass,
+     which left ~140px below the copyright vs 60px above the logo — now
+     both ends breathe about equally (~92px each). Logo also bumped +5%
+     (115 → 121px) and given a wider gap before the first circle. */
   .logo-mark {
-    top: 60px;
-    width: 115px;
-    height: 51px;
+    top: 92px;
+    width: 121px;
+    height: 54px;
   }
 
   /* Same triangle venn as desktop, scaled by 220/279 ≈ 0.789 and centered
@@ -787,7 +808,7 @@ body::after { bottom: 0; }
      gathered in the middle, not a vertical column. */
   .venn {
     left: 25px;
-    top: 130px;
+    top: 176px;
     width: 380px;
     height: 347px;
   }
@@ -829,7 +850,7 @@ body::after { bottom: 0; }
   /* top + its permanent 14px translateY + row/sub/copy stack lands with
      a real margin above the bottom edge instead of running flush to it. */
   .brandline {
-    top: 480px;
+    top: 526px;
   }
   .brandline-word { font-size: 25px; }
   /* Tighter than desktop's 44px — "Beauty Is Balance" and the tagline
